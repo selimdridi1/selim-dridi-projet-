@@ -1,1 +1,374 @@
+\documentclass[aspectratio=169]{beamer}
 
+% Thème et couleurs
+\usetheme{Madrid}
+\usecolortheme{dolphin}
+\definecolor{myblue}{RGB}{24, 105, 174}
+\definecolor{mygreen}{RGB}{0, 135, 68}
+\definecolor{myred}{RGB}{211, 47, 47}
+\setbeamercolor{title}{fg=myblue}
+\setbeamercolor{frametitle}{fg=myblue}
+\setbeamercolor{structure}{fg=myblue}
+
+% Packages utiles
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{minted}
+\usepackage{fontawesome5}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, positioning}
+
+% Infos du titre
+\title{Stratégie de Trading Multi-Facteurs}
+\subtitle{Une application d'aide à la décision d'investissement}
+\author{BOUSSON Guillaume , DRIDI Selim , CORBARI Ugo}
+\institute{Université de Strasbourg}
+\date{2025}
+
+% Pied de page simplifié
+\setbeamertemplate{footline}{%
+  \begin{beamercolorbox}[wd=\paperwidth,ht=2.5ex,dp=1.125ex,leftskip=.3cm,rightskip=.3cm]{footlinecolor}
+    \hfill\insertframenumber\,/\,\inserttotalframenumber
+  \end{beamercolorbox}
+}
+
+% Supprimer les icônes de navigation
+\setbeamertemplate{navigation symbols}{}
+
+\begin{document}
+
+% Page de titre
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% Plan
+\begin{frame}{Plan de la présentation}
+  \tableofcontents
+\end{frame}
+
+\section{Introduction}
+
+\begin{frame}{L'origine de l'idée}
+  \begin{itemize}
+    \item Issue de notre cours de trading en anglais ce semestre
+    \item Constat d'un problème concret dans la pratique du trading:
+    \begin{itemize}
+      \item Nécessité de consulter de multiples sources d'information
+      \item Analyse technique, fondamentale, actualités, contexte macro...
+      \item Processus chronophage et sujet aux biais émotionnels
+    \end{itemize}
+  \end{itemize}
+  
+  
+\end{frame}
+
+\begin{frame}{Utilité et originalité}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \textbf{Utilité}
+    \begin{itemize}
+      \item Automatisation complète de la veille financière
+      \item Neutralisation des biais émotionnels
+      \item Simplification de la prise de décision
+      \item Accessibilité pour tous niveaux d'expérience
+    \end{itemize}
+    
+    \column{0.5\textwidth}
+    \textbf{Originalité}
+    \begin{itemize}
+      \item Approche multi-facteurs intégrée
+      \item Combinaison de 4 dimensions d'analyse:
+      \begin{itemize}
+        \item Technique
+        \item Fondamentale
+        \item Actualités
+        \item Macro-économique
+      \end{itemize}
+      \item Interface utilisateur intuitive
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+\section{Conception et développement}
+
+\begin{frame}{Structure modulaire du code}
+  \centering
+  \begin{tikzpicture}[
+    block/.style={rectangle, draw, fill=blue!20, text width=5em, text centered, rounded corners, minimum height=2em},
+    line/.style={draw, -latex'},
+    ]
+    
+    % Modules principaux
+    \node[block, fill=myblue!20] (data) {Récupération des données};
+    \node[block, fill=myblue!20, below=0.5cm of data] (indic) {Indicateurs techniques};
+    \node[block, fill=myblue!20, below=0.5cm of indic] (news) {Analyse des actualités};
+    \node[block, fill=myblue!20, below=0.5cm of news] (fund) {Analyse fondamentale};
+    \node[block, fill=myblue!20, below=0.5cm of fund] (macro) {Analyse macro};
+    
+    % Module central
+    \node[block, fill=mygreen!20, right=2cm of fund] (signal) {Génération des signaux};
+    
+    % Modules de sortie
+    \node[block, fill=myred!20, right=2cm of signal] (ui) {Interface utilisateur};
+    \node[block, fill=myred!20, below=0.5cm of ui] (visu) {Visualisation};
+    \node[block, fill=myred!20, above=0.5cm of ui] (back) {Backtest};
+    
+    % Connexions
+    \path[line] (data) -- (signal);
+    \path[line] (indic) -- (signal);
+    \path[line] (news) -- (signal);
+    \path[line] (fund) -- (signal);
+    \path[line] (macro) -- (signal);
+    \path[line] (signal) -- (ui);
+    \path[line] (signal) -- (visu);
+    \path[line] (signal) -- (back);
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Sources de données et APIs}
+  \begin{columns}
+    \column{0.6\textwidth}
+    \begin{itemize}
+      \item \textbf{yfinance}: données historiques et fondamentales
+      \begin{itemize}
+        \item Prix, volumes, indicateurs financiers
+        \item Gratuit et relativement complet
+        \item Gestion des ajustements et splits
+      \end{itemize}
+      \item \textbf{Finnhub API}: actualités financières
+      \begin{itemize}
+        \item Actualités récentes par ticker
+        \item Gestion des quotas limités (système de fallback)
+      \end{itemize}
+    \end{itemize}
+    
+    \column{0.4\textwidth}
+    \begin{center}
+      
+    \end{center}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Analyse des actualités avec VADER}
+  \begin{itemize}
+    \item VADER: Valence Aware Dictionary and sEntiment Reasoner
+    \item Spécialement conçu pour les textes courts (titres d'articles)
+    \item Processus en 4 étapes:
+    \begin{enumerate}
+      \item Récupération des actualités récentes via API Finnhub
+      \item Analyse du sentiment des titres (70\% du score final)
+      \item Analyse du sentiment des descriptions (30\% du score final)
+      \item Calcul du score moyen pour générer un signal
+    \end{enumerate}
+  \end{itemize}
+  
+  \vspace{0.5cm}
+  \begin{center}
+    \begin{tabular}{lcr}
+      \toprule
+      \textbf{Score} & \textbf{Interprétation} & \textbf{Signal} \\
+      \midrule
+      > 0.2 & Très positif & Achat \\
+      0.05 à 0.2 & Légèrement positif & Conservation \\
+      -0.05 à 0.05 & Neutre & Conservation \\
+      -0.2 à -0.05 & Légèrement négatif & Conservation \\
+      < -0.2 & Très négatif & Vente \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Indicateurs techniques}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \begin{itemize}
+      \item Moyennes Mobiles Simples (SMA)
+      \item Relative Strength Index (RSI)
+      \item MACD (Moving Average Convergence Divergence)
+      \item Bandes de Bollinger
+      \item Average True Range (ATR)
+      \item Oscillateur Stochastique
+    \end{itemize}
+    
+    \column{0.5\textwidth}
+   
+    \end{columns}
+\end{frame}
+
+
+
+\begin{frame}{Algorithme de génération des signaux}
+  \textbf{Cœur de notre application}:
+  
+  \begin{itemize}
+    \item Combinaison des signaux individuels:
+    \begin{itemize}
+      \item Technique (SMA, RSI, MACD, etc.)
+      \item Actualités (score VADER)
+      \item Fondamental (PER, ROE, D/E)
+      \item Macro-économique (VIX, tendance S\&P 500)
+    \end{itemize}
+    \item Règles de décision:
+    \begin{itemize}
+      \item Signal fort: tous les facteurs sont alignés dans la même direction
+      \item Signal neutre: facteurs contradictoires
+      \item Priorisation des facteurs selon l'horizon d'investissement
+    \end{itemize}
+  \end{itemize}
+  
+  \vspace{0.3cm}
+  \begin{center}
+    \begin{tabular}{ll}
+      \textbf{Signal final} & \textbf{Interprétation} \\
+      \hline
+      strong\_buy & Tous les signaux sont positifs \\
+      long/buy & Signal d'achat avec confiance modérée \\
+      hold & Signal neutre ou contradictions entre signaux \\
+      short/sell & Signal de vente avec confiance modérée \\
+      strong\_sell & Tous les signaux sont négatifs \\
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Défis techniques surmontés}
+  \begin{itemize}
+    \item \textbf{Limitations des APIs gratuites}
+    \begin{itemize}
+      \item Système de fallback avec données simulées
+      \item Gestion des erreurs et des réponses incomplètes
+    \end{itemize}
+    
+    \item \textbf{Optimisation des performances}
+    \begin{itemize}
+      \item Parallélisation des calculs pour le tableau de bord
+      \item Mise en cache des résultats intermédiaires
+    \end{itemize}
+    
+    \item \textbf{Accessibilité pour les non-experts}
+    \begin{itemize}
+      \item Développement d'un mode d'emploi complet
+      \item Visualisations intuitives avec codes couleur
+    \end{itemize}
+    
+    \item \textbf{Déploiement}
+    \begin{itemize}
+      \item Configuration de Streamlit Cloud
+      \item Résolution des problèmes d'indentation dans le code
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Notre application}
+  \begin{center}
+    \Large \textbf{Accès à l'application}
+    
+    \vspace{0.7cm}
+    
+    \begin{itemize}\large
+      \item L'application est déployée sur Streamlit Cloud et accessible à tous
+      \item Aucune installation nécessaire, fonctionne directement dans le navigateur
+      \item Compatible avec PC, tablette et smartphone
+    \end{itemize}
+    
+    \vspace{0.7cm}
+    
+    \begin{beamercolorbox}[sep=1em,center,shadow=true,rounded=true]{block title}
+      \large \url{https://guillaumebousson-application-strat-gie-trading-code-irmuvp.streamlit.app/}
+    \end{beamercolorbox}
+    
+    \vspace{0.5cm}
+    
+    \normalsize Le code source est disponible sur GitHub:\\
+    \url{https://github.com/GuillaumeBousson/Application-Strat-gie-Trading}
+  \end{center}
+\end{frame}
+
+
+
+
+\section{Conclusion}
+
+\begin{frame}{Ce que nous avons appris}
+  \begin{itemize}
+    \item \textbf{Travail collaboratif sur un code complexe}
+    \begin{itemize}
+      \item Structure modulaire
+      \item Coordination et communication
+    \end{itemize}
+    
+    \item \textbf{Intégration d'APIs externes}
+    \begin{itemize}
+      \item Gestion des erreurs et des limitations
+      \item Solutions de secours
+    \end{itemize}
+    
+    \item \textbf{Visualisation de données complexes}
+    \begin{itemize}
+      \item Maîtrise de Plotly
+      \item Conception d'interfaces intuitives
+    \end{itemize}
+    
+    \item \textbf{Déploiement d'applications web}
+    \begin{itemize}
+      \item Configuration de Streamlit Cloud
+      \item Mise en production
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Perspectives d'amélioration}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \begin{itemize}
+      \item \textbf{Stratégies personnalisables}
+      \begin{itemize}
+        \item Choix des indicateurs
+        \item Paramétrage des règles de décision
+      \end{itemize}
+      
+      \item \textbf{Analyse macro approfondie}
+      \begin{itemize}
+        \item Taux d'intérêt
+        \item Inflation
+        \item Indices sectoriels
+      \end{itemize}
+    \end{itemize}
+    
+    \column{0.5\textwidth}
+    \begin{itemize}
+      \item \textbf{Système d'alertes}
+      \begin{itemize}
+        \item Notifications par email
+        \item Suivi automatisé
+      \end{itemize}
+      
+      \item \textbf{Connexion à un compte démo}
+      \begin{itemize}
+        \item Test en conditions réelles
+        \item Validation de l'efficacité
+      \end{itemize}
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Remerciements}
+  \begin{center}
+    \Large Merci pour votre attention!
+    
+    \vspace{1cm}
+    
+    \normalsize Des questions?
+    
+    \vspace{1cm}
+    
+    \small L'application est disponible en ligne à l'adresse:\\
+    \texttt{https://guillaumebousson-application-strat-gie-trading-code-irmuvp.streamlit.app/}
+  \end{center}
+\end{frame}
+
+\end{document}
