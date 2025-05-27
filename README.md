@@ -1,4 +1,4 @@
-# selim-dridi-projet-
+# selim-dridi-projet
 Stratégie de Trading Multi-Facteurs avec Visualisation Interactive
 
 Pourquoi ce projet ?
