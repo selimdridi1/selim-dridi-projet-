@@ -1,0 +1,10 @@
+yfinance
+pandas
+numpy
+matplotlib
+streamlit
+seaborn
+vaderSentiment
+requests
+python-dotenv
+plotly
